@@ -2,6 +2,34 @@
 #include<string.h>
 #include <stdlib.h>
 
+float findFrequncyPercentTwoChars(char* S, char one, char two)
+{
+    int i = 0;
+    int freq = 0;
+
+    while (S[i] != '\0' && S[i + 1] != '\0') {
+        if (S[i] == one && S[i + 1] == two) {
+            freq++;
+        }
+        i++;
+    }
+
+    return (freq * 100.0) / i;
+}
+
+int isBigramEnglish(char* message) {
+
+    float thFreq = findFrequncyPercentTwoChars(message, 'T', 'H');
+
+    printf("thFreq: %f\n", thFreq);
+
+    if (thFreq > 1) {
+        return 1;
+    }
+
+    return 0;
+}
+
 char getMostCommonChar1(char* str) {
     int array[255] = {0};
     int i, max, index;
@@ -61,22 +89,23 @@ char* ceasarDecryptMsg(char message[], int key){
 char* transposeDecryptMsg(char* enMsg, int key){
 
     char** workingSpace = malloc(sizeof(char*) * key);
+    int strLength = strlen(enMsg);
 
     for (int i = 0; i < key; i++) {
         workingSpace[i] = malloc(sizeof(char));
     }
 
     for (int i = 0; i < key; i++) {
-        for (int j = 0; j < strlen(enMsg) / key; j++) {
+        for (int j = 0; j < strLength / key; j++) {
             workingSpace[i] = strAppend1(workingSpace[i], enMsg[(key * i) + j]);            
         }
     }
 
-    char* decryptedStr = malloc(strlen(enMsg));
+    char* decryptedStr = malloc(strLength);
 
-    for (int i = 0; i < key; i++) {
-        for (int j = 0; j < strlen(enMsg) / key; j++) {
-            decryptedStr = strAppend1(decryptedStr, workingSpace[j][i]);            
+    for (int j = 0; j < strLength / key; j++) {
+        for (int i = 0; i < key; i++) {
+            decryptedStr = strAppend1(decryptedStr, workingSpace[i][j]);
         }
     }
 
@@ -100,9 +129,6 @@ char* unSplitStr(char** splitStr, int keyLen) {
 
 void recordKey(char* fileOutPath, char* key) {
 
-    char* fOut = malloc(sizeof(char)*7);
-    strcpy(fOut, "key.txt");
-
     FILE* fOutPtr = fopen(fileOutPath, "w");
     fprintf(fOutPtr, "Key: %s\n\n", key);
     fclose(fOutPtr);
@@ -118,7 +144,7 @@ char* decryptVignere(char** message, int keyLen, char* fileOut) {
         key[i] = offset + 'A';
     }
 
-    recordKey(fileOut, key);
+    /*recordKey(fileOut, key);*/
 
     return unSplitStr(message, keyLen);
 }
@@ -129,15 +155,11 @@ char* decryptCeasar(char* message, char* offset, char* fileOut) {
     return ceasarDecryptMsg(message, (int)offset[0] - 'A');
 }
 
-int isValidBiGram(char* decryptedStr) {
-    return 1;
-}
-
 char* decryptTranspose(char* message) {
 
     char* decryptedMsg[30000] = {0};
 
-    for (int i = 0; i < 15; i++) {
+    for (int i = 2; i < 100; i++) {
         if (strlen(message) % i != 0) {
             continue;
         }
@@ -146,7 +168,7 @@ char* decryptTranspose(char* message) {
 
         /* Check the distrobution of n-grams to check they are actual words */
 
-        if (!isValidBiGram(decryptedStr)) {
+        if (!isBigramEnglish(decryptedStr)) {
             continue;
         }
 

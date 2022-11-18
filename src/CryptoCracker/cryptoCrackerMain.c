@@ -4,10 +4,14 @@
 
 #include "ceasar.c"
 
-int* findFrequncy(char S[])
+int* findFrequncy(char* S)
 {
     int i = 0;
     int* freq = malloc(sizeof(int) * 26);
+
+    for (int j = 0; j < 26; j++) {
+        freq[j] = 0;
+    }
 
     while (S[i] != '\0') {
         freq[S[i] - 'A']++;
@@ -69,31 +73,40 @@ char getDistOffset(char* message) {
     return mostCommon - 'E'; /*The provided examples only use capitol letters for now*/
 }
 
-float getDistPercent(char* message) {
+int getDistPercent(char* message) {
     int* freq = findFrequncy(message);
 
     float total = 0;
     int max = 0;
     int second = 0;
+    int third = 0;
 
     for (int i = 0; i < 26; i++) {
         if (freq[i] > max) {
+            third = second;
             second = max;
             max = freq[i];
         }
         else if (freq[i] > second) {
+            third = second;
             second = freq[i];
+        }
+        else if (freq[i] > third) {
+            third = freq[i];
         }
 
         total += freq[i];
     }
 
-    return ((max/total) - (second/total)) * 100;
+    float topDist = ((max/total) - (second/total)) * 100;
+    float secondDist = ((second/total) - (third/total)) * 100;
+
+    return topDist > 2 && secondDist > 0.5;
 }
 
 int getEncryptionType(char* message) {
 
-    if (getDistPercent(message) < 2) {
+    if (getDistPercent(message) == 0) {
         return -1;
     }
 
@@ -163,7 +176,7 @@ char* crackMessage(char* msg, char* fileOut) {
         while (keyLen < 15) {
             char** splitString = splitStr(msg, keyLen);
 
-            if (getDistPercent(splitString[0]) < 2) {
+            if (getDistPercent(splitString[0]) == 0) {
                 keyLen++;
                 continue;
             }
@@ -181,7 +194,8 @@ char* crackMessage(char* msg, char* fileOut) {
         return decryptCeasar(msg, distOffset, fileOut);
     }
 
-    return "Could not decrypt message. Other encryption method used.";
+    printf("\nCould not decrypt message. Other encryption method used.\n");
+    return "\nCould not decrypt message. Other encryption method used.";
 }
 
 void startCracking(char* fileInPath, char* fileOutPath) {
@@ -195,6 +209,8 @@ void startCracking(char* fileInPath, char* fileOutPath) {
     FILE* fileOut_ptr;
 
     fileIn_ptr = fopen(fileInPath, "r");
+    fileOut_ptr = fopen(fileOutPath, "w");
+    fclose(fileOut_ptr);
 
 
     if (fileIn_ptr == NULL) {
