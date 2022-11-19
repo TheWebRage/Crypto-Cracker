@@ -1,21 +1,36 @@
--------------------- Ecryption - David Weber - Version 2.0.1 -------------------- 
+-------------------- Ecryption - David Weber - Version 3.0.1 -------------------- 
 
 
-This new addition now has a setUID portion with a employee directory.
-- The previous assignment is also in the main menu, but all new logic is found in the new menu item
+This new addition now has a Crypto Cracker menu! This will accept a path to a file to decrypt and another for the output. 
 
-In this database, you are able to view all records, but to modify you need the password. 
-- The current password is "Toe" and can be changed in the modify menu.
-- In the modify menu, you are able to add, edit, and delete records
 
-These records are saved in a directory.txt file with 0644 permissions
-- This means that anyone can view, but only root can modify
+-------------------- Logic ----------------------------
 
-The password is saved in a password.txt file, but only root can read and modify. 
-- Noone else has any permissions.
+My tool will find the best encryption algorithm from one of the following:
+- Ceasar
+- Vigenere
+- Transpotition
 
-The root priviliges are only used for those two files. Nothing else is used by them.
+It will also mention when the key is too large or another algorithm was used.
 
+In order to know what algorithm to use, it will:
+- Get the distrobutuion for the string
+- If the distro looks clear, but offset, then it will use the Ceasar cipher.
+- If the distro looks clear, but no offset, then it will use the transposition cipher
+	- This will use factors up to size 1000 to create a new 2d array to work in
+		- This will rotate the string into a 2d array. 
+		- It will Read in going the opposite direction.
+		- It will test the new string with the bi-grams to check if it is english
+		- if not try the next size factor
+	- Otherwise return
+- If the distro looks unclear, then:
+	- It will try key lengths up to 15
+	- It will split the string into xth items into strings 
+	- Create a distrobutiuon for these new strings
+	- If any of these have a clear distrobution, then use that key length.
+		- Find the offset for each string and use ceasar cipher for each
+		- Stick them back together and return the key and result
+- Otherwise not able to use any of the coded algorithms.
 
 -------------------- How to Compile -------------------- 
 
@@ -28,6 +43,69 @@ The root priviliges are only used for those two files. Nothing else is used by t
 
 --------------------------------------------------------
 
-NOTE: To make sure ownership stays after extracting, use the following command to extract:
-- "sudo tar --same-owner -xvf ./SetUID.tar"
+
+--------------------- Results ------------------------
+For each of the provided samples, here are my results:
+
+ciphertext1.txt
+- Ceasar Cipher
+- Key: K - Only took one try to find offset
+- Fast Time to recover key
+- First bit of decrypted text: 
+- CALLMEISHMAELSOMEYEARSAGONEVERMINDHOWLONGPRECISELYHAVINGLITTLEORNOMONEYINMYPURSEANDNOTHINGPARTICULAR
+
+ciphertext2.txt
+- Transposition Cipher
+- Key: Unable to find key - Tried up to keys 1000.
+- Slow time to decrypt
+
+
+ciphertext3.txt
+- Unknown Cipher
+- Know it is not one of the ones looking for since it does not have a clear distrobution for any keys up to length 15.
+- Slow
+
+
+ciphertext4.txt
+- Vignenere Cipher
+- Key: LOGANUTAH - Tried keys up to length 9
+- Medium Time to recover
+- first bit of decrypted text:
+- IAMHAPPYTOJOINWITHYOUTODAYINWHATWILLGODOWNINHISTORYASTHEGREATESTDEMONSTRATIONFORFREEDOMINTHEHISTORYOFOURNATION
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

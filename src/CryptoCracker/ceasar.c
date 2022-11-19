@@ -89,7 +89,7 @@ char* ceasarDecryptMsg(char message[], int key){
 char* transposeDecryptMsg(char* enMsg, int key){
 
     char** workingSpace = malloc(sizeof(char*) * key);
-    int strLength = strlen(enMsg);
+    int strLength = strlen(enMsg) - 1;
 
     for (int i = 0; i < key; i++) {
         workingSpace[i] = malloc(sizeof(char));
@@ -97,7 +97,11 @@ char* transposeDecryptMsg(char* enMsg, int key){
 
     for (int i = 0; i < key; i++) {
         for (int j = 0; j < strLength / key; j++) {
-            workingSpace[i] = strAppend1(workingSpace[i], enMsg[(key * i) + j]);            
+            if (enMsg[(key * i) + j] == '\0') {
+                continue;
+            }
+
+            workingSpace[i] = strAppend1(workingSpace[i], enMsg[((strLength / key) * i) + j]);            
         }
     }
 
@@ -144,23 +148,40 @@ char* decryptVignere(char** message, int keyLen, char* fileOut) {
         key[i] = offset + 'A';
     }
 
-    /*recordKey(fileOut, key);*/
+    recordKey(fileOut, key);
 
     return unSplitStr(message, keyLen);
 }
 
-char* decryptCeasar(char* message, char* offset, char* fileOut) {
-    offset[0] = offset[0] + 'A';
-    recordKey(fileOut, offset);
-    return ceasarDecryptMsg(message, (int)offset[0] - 'A');
+void recordKeyC(char* fileOutPath, int key) {
+
+    char keyOff = (char)key;
+
+    char* printKeyOff = malloc(sizeof(char) + 1 + 1);
+    printKeyOff[0] = keyOff;
+    printKeyOff[1] = '\0';
+
+    FILE* fOutPtr = fopen(fileOutPath, "w");
+    fprintf(fOutPtr, "Key: %s\n\n", printKeyOff);
+    fclose(fOutPtr);
+    printf("key: %s\n", printKeyOff);
+}
+
+char* decryptCeasar(char* message, char offset, char* fileOut) {
+
+    int offsetInt = offset;
+    recordKeyC(fileOut, offset + 'A');
+    return ceasarDecryptMsg(message, offsetInt);
 }
 
 char* decryptTranspose(char* message) {
 
     char* decryptedMsg[30000] = {0};
 
-    for (int i = 2; i < 100; i++) {
-        if (strlen(message) % i != 0) {
+    int messageLen = strlen(message) - 1;
+
+    for (int i = 2; i < 1000; i++) {
+        if (messageLen % i != 0) {
             continue;
         }
 
@@ -172,9 +193,8 @@ char* decryptTranspose(char* message) {
             continue;
         }
 
-        /*TODO: RECORD KEY*/
-
         return decryptedStr;
     }
 
+    return "ERROR: Tried keys up to 1000 and could not decrypt. Not reasonable to decrypt.";
 }

@@ -187,8 +187,8 @@ char* crackMessage(char* msg, char* fileOut) {
     }
 
     else if (encryptionType == 1) {
-        char* distOffset = malloc(sizeof(char));
-        distOffset[0] = getDistOffset(msg);
+        char distOffset = malloc(sizeof(char));
+        distOffset = getDistOffset(msg);
 
         printf("\nCracking using Ceaser Decoder\n");
         return decryptCeasar(msg, distOffset, fileOut);
